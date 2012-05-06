@@ -1,245 +1,175 @@
-// Game object
-window.Game = {}
+var BlackJack = function (){
 
-
-//List of players
-Game.table = [];
-
-Game.card = function(){
-	// Suit - string
-	this.suit;
-	// Face value - string or number.
-	//Put check here to see if it's a facecard.
-	this.faceValue;
-}
-
-Game.Player = function(type, username){
-	this.type = type;
-	this.username = username;
-	var totalMoney = 100;
-	// dealer limit
-	this.limit;
-	//var that = this;
-	var handValue;
-	this.hand = [];
-		
-	if (this.type == "dealer"){
-		//Set dealer specific properties and methods here
-		this.limit = 16;
-	}
-	
-	
-	
-	function getTotalMoney(){
-		return totalMoney;
-	}
-	
-	this.placeBet = function (amt){
-		this.transact("subtract", amt);
-		return "Bet of $" + amt + " placed.";
-	}
-	
-	this.transact = function(action, amt){
-		this.action = action;
-		this.amt = amt;
-		if(this.action == "add"){
-			totalMoney = totalMoney + amt;
-		} else{
-			totalMoney = totalMoney - amt;
-		}
-	}
-	
-	
-	this.getPlayerType = function(){
-		return this.type;
-	}
-	
-	this.getTotalMoney = function(){
-		return totalMoney;
-	}
-	
-	this.calculateTotalHand = function(){
-		var value;
-		
-		return value;
-	}
-	
-	this.init = function(){
-		this.addToGame();
-		
-	}
-	
-	
-	//Initialize here
-	this.init();
-	
-}
-Game.Player.prototype.getPlayerName = function(){
-	return this.username;
-};
-Game.Player.prototype.addToGame = function(){
-	var playername = this.getPlayerName();
-	Game.table.push(this);
 };
 
-Game.Player.prototype.calculateHandValue = function(){
-	var values = [];
-	var totalHand = 0;
-	for(var i = 0; i < this.hand.length; i++){
-		values[i] = Game.calculateCardValue(this.hand[i]);
-		totalHand = totalHand + values[i];
-	}
-	return totalHand;
-	
-}
+/** @constructor */
+var Card = function (suit, number){
+    /** @returns {Number} The number of the card in the deck. (1-52) */
+    this.getNumber = function (){
+        return number;  
+    };
+    /** @returns {String} The name of the suit. "Hearts","Clubs","Spades", or "Diamonds." */
+    this.getSuit = function (){
+        var suitName = '';
+        switch (suit){
+            case 1:
+                suitName = "Hearts";
+                break;
+            case 2:
+                suitName = "Clubs";
+                break; 
+            case 3:
+                suitName = "Spades";
+                break; 
+            case 4:
+                suitName = "Diamonds";
+                break;                
+        }
+        return suitName;
+    };
+    /** @returns {Number} The value of the card for scoring. */
+    this.getValue = function (){
+        var value = number;
+        if (number >= 10){
+            value = 10;
+        }
+        if(number === 1) {
+            value = 11;
+        }
+        return value;
+    };
+    /** @returns {String} The full name of the card. "Ace of Spades" */
+    this.getName = function (){
+        var cardName = '';
+        switch (number){
+            case 1:
+                cardName = "Ace";
+                break;
+            case 13:
+                cardName = "King";
+                break;
+            case 12:
+               cardName = "Queen";
+                break;
+            case 11:
+                cardName = "Jack";
+                break;
+            default:
+                cardName = number;
+                break;
+        }
+        return cardName + " of " + this.getSuit();
+    };
+};
 
-Game.Deck = {
-		
-	cards : [],
-	
-	fullDeck : ['1-s', '1-c', '1-h', '1-d', '2-s', '2-c', '2-h', '2-d', '3-s', '3-c', '3-h', '3-d', '4-s', '4-c', '4-h', '4-d', '5-s', '5-c', '5-h', '5-d', '6-s', '6-c', '6-h', '6-d', '7-s', '7-c', '7-h', '7-d', '8-s', '8-c', '8-h', '8-d', '9-s', '9-c', '9-h', '9-d', '10-s', '10-c', '10-h', '10-d', '11-s', '11-c', '11-h', '11-d', '12-s', '12-c', '12-h', '12-d', '13-s', '13-c', '13-h', '13-d'],
-	
-	
-	hitPlayer : function(player){
-		this.player = player;
-		var deck = Game.Deck;
-		// Pop a card off the cards array and pass the value to the player
-		var numCards = deck.getNumCards() - 1;
-		var topCard = deck.cards[numCards];
-		this.player.receiveCard(topCard);
-		deck.cards.pop();
-	},
-	
-	initialDeal : function(){
-		//Pop two cards off the stack and pass the value of each to the player.
-		for(var i = 0; i < Game.table.length; i++){
-			var deck = Game.Deck;
-			var currPlayer = Game.table[i];
-			var currPlayerName = currPlayer.getPlayerName();
-			var currPlayerType = currPlayer.getPlayerType();
-			
-			for(var j = 0; j < 2; j++){
-				deck.hitPlayer(currPlayer);
-				
-			}
-			var handValue = currPlayer.calculateHandValue();
-			console.log(currPlayer.limit);
-			if(currPlayerType == "dealer"){
-				console.log("in dealer if");
-				console.log(typeof(handValue));
-				console.log(typeof(currPlayer.limit));
-				/*while(handValue < currPlayer.limit){
-					deck.hitPlayer(currPlayer);
-					console.log("Hit dealer additionally");
-				}*/
-				
-			}
-			
-		}
-		
-		
+var Deck = function (){
+    var i;
+    var deckArray = [];
+    var suit;
+    var number;
+    for (i=0;i<52;i++){
+        suit = i%4+1;
+        number = i%13+1;
+        deckArray.push(new Card(suit,number));
+    }
+    /** @returns {Array} An array of Cards representing the shuffled version of the deck. Modifies the private instance of the array. */
+    this.shuffle = function (){
+        var o = deckArray;
+        for(var j, x, i = o.length; i; j = parseInt(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
+        deckArray = o;
+        return this.getCards();
+    };
+    /** @returns {Array} Ann array of cards representing the Deck. */
+    this.getCards = function (){
+        return deckArray;
+    };
+    /** @returns {Card} Deals the top card off the deck. Removes it from the Deck. */
+    this.deal = function (){
+        return deckArray.pop();
+    };
+};
 
-		console.log("cards are dealt");
-	},
-	
-	fillDeck : function(){
-		Game.Deck.cards = Game.Deck.fullDeck;
-		return Game.Deck.cards;
-	},
-	
-	shuffle : function(){
-		Game.Deck.fillDeck();
-		Game.Deck.cards.sort(function() { return 0.5 - Math.random() });
-		return "cards are shuffled";
-	},
-	
-	getNumCards : function(){
-		return Game.Deck.cards.length;
-	},
-	
-	init : function(){
-		Game.Deck.shuffle();
-	}
-	
-		
-}
+var Hand = function (){
+    var cards = [];
+    cards.push( gameDeck.deal(), gameDeck.deal());
+    /** @returns {Array} The array of cards representing the hand. */
+    this.getHand = function (){
+        return cards;
+    };
+    /** @returns {Number} The score of the hand. */
+    this.score = function (){
+        var i;
+        var score = 0;
+        var cardVal = 0;
+        var aces = 0;
+        for (i=0;i<cards.length;i++){
+            cardVal = cards[i].getValue();
+            if (cardVal == 11) {
+                aces += 1;
+            }
+            score += cardVal;
+        }
+        while (score > 21 && aces > 0){
+            score -= 10;
+            aces -=1;
+        }
+        return score;
+    };
+    /** @returns {String} Comma separated list of card names in the hand. */
+    this.printHand = function (){
+        var hand = [];
+        var i;
+        for (i=0;i<cards.length;i++){
+            hand.push(cards[i].getName());
+        }
+        return hand.join();
+    };
+    /** Adds a card from the Deck into the Hand. */
+    this.hitMe = function (){
+        cards.push(gameDeck.deal());
+    };
+};
 
-Game.calculateCardValue = function(cardId){
-	this.cardId = cardId;
-	var cardSplit = cardId.split("-");
-	var cardNum = parseInt(cardSplit[0]);
-	if(cardNum < 11){
-		return cardNum;
-	} else {
-		return 10;
-	}
-}
-
-Game.calculateWinner = function(){
-	var i,
-		j,
-		player,
-		playerName,
-		playerTotal;
-	this.playerTotals = [];
-	
-	for(i = 0; i < Game.table.length; i++ ){
-		player = Game.table[i];
-		console.log(player);
-		playerName = player.getPlayerName();
-		console.log("Player: " + playerName);
-		playerTotal = player.calculateHandValue();
-		console.log("PlayerTotal: " + playerTotal);
-		if(playerTotal < 22){
-			this.playerTotals.push(playerTotal);
-		}
-		
-	}
-	
-	this.highestValue = Math.max.apply( Math, this.playerTotals );
-	for(j = 0; j < this.playerTotals.length; j++){
-		if(this.playerTotals[j] == this.highestValue){
-			return Game.table[j].getPlayerName() + " is the winner.";
-		}
-	}
-	Game.end();
-	//return Game.table[this.highestValue].getPlayerName() + " is the winner.";
-	
-}
-
-Game.end = function(){
-	return "Game over.";
-}
-
-Game.Pot = {
-	value : 0,
-	add : function(amt){
-		Game.Pot.value += amt;
-	},
-	
-	awardPlayer : function(username){
-		this.username = username;
-		this.username.transact("add", Game.Pot.value);
-		Game.Pot.value = 0;
-	},
-	
-	getPotValue : function(){
-		return Game.Pot.value;
-	}
-	
-}
-
-Game.Player.prototype.receiveCard = function(card){
-	this.card = card;
-	this.hand.push(this.card);
-}
-
-
-//Set up Players
-var Dealer = new Game.Player('dealer', 'Dealer');
-var Jim = new Game.Player('player', 'Jim');
-
-
-//Initializers
-Game.Deck.init();
-Game.Deck.initialDeal();
+/** That bastard, the dealer */
+var gameDealer = function (){
+    var hand = new Hand();
+    while (hand.score() < 17){
+        hand.hitMe();
+    }
+    return hand;
+};
+/** The player */
+var gameUser = function (){
+    var hand = new Hand();
+    while (hand.score() <= 21 && confirm(hand.printHand()+ " ("+ hand.score() +") Would you like to hit?")){
+        hand.hitMe();
+    }
+    return hand;
+};
+/** Run the game and tally the score to determine the outcome. */
+var declareWinner = function (userHand, dealerHand){
+    var outcome = '';
+    var dealerScore = dealerHand.score();
+    var userScore = userHand.score();
+    if (userScore > 21 || dealerScore === 21){
+        outcome = "You lose!";
+    }else if (dealerScore > 21 || userScore === 21 || userScore > dealerHand.score()){
+        outcome = "You win!";
+    }else if (dealerScore > userScore){
+        outcome = "You lose!";
+    }else if (dealerScore === userScore){
+        outcome = "You tied!";
+    }
+    return outcome+"<br />Dealer: "+dealerHand.score()+"<br />You: "+userScore;
+};
+/* Set up our Game's Deck */
+var gameDeck = new Deck();
+/** Play BLACKJACK! */
+(function (deck, dealer, player){
+    /* make sure to shuffle. */
+    deck.shuffle();
+    /* kick off the dealing and output the winner. */
+    document.write(
+        declareWinner(player(), dealer())
+    );
+}(gameDeck, gameDealer, gameUser));
